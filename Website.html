@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Fuel Cost Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #d7e1ec, #f7fbff);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #004080;
+        }
+        label {
+            font-weight: 600;
+            margin-top: 15px;
+            display: block;
+            text-align: left;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-top: 20px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #006400;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Flight Fuel Cost Calculator</h1>
+
+        <label for="plane">Select your aircraft:</label>
+        <select id="plane">
+            <option value="Cessna 172">Cessna 172</option>
+            <option value="Cessna Citation CJ3">Cessna Citation CJ3</option>
+            <option value="Cessna Citation CJ4">Cessna Citation CJ4</option>
+            <option value="Cessna Citation CJ2">Cessna Citation CJ2</option>
+            <option value="Cessna Conquest I">Cessna Conquest I</option>
+            <option value="Cessna Conquest II">Cessna Conquest II</option>
+            <option value="Cessna 150">Cessna 150</option>
+            <option value="Cessna 152">Cessna 152</option>
+            <option value="Cessna 180">Cessna 180</option>
+            <option value="Cessna 182">Cessna 182</option>
+            <option value="Cessna 185">Cessna 185</option>
+            <option value="Cessna 210">Cessna 210</option>
+        </select>
+
+        <label for="airport">Enter airport name or code (e.g., Hagerstown Regional, LAX, JFK, Miami International):</label>
+        <input type="text" id="airport" placeholder="Enter airport name or code">
+
+        <label for="hours">How many hours is your flight?</label>
+        <input type="number" id="hours" min="0" step="0.1" placeholder="Enter flight duration in hours">
+
+        <button onclick="calculateFuelCost()">Calculate</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const planes = {
+            "Cessna 172": { burnRate: 6, fuelType: "Avgas" },
+            "Cessna Citation CJ3": { burnRate: 150, fuelType: "Jet A" },
+            "Cessna Citation CJ4": { burnRate: 173, fuelType: "Jet A" },
+            "Cessna Citation CJ2": { burnRate: 140, fuelType: "Jet A" },
+            "Cessna Conquest I": { burnRate: 45, fuelType: "Jet A" },
+            "Cessna Conquest II": { burnRate: 35, fuelType: "Jet A" },
+            "Cessna 150": { burnRate: 5.6, fuelType: "Avgas" },
+            "Cessna 152": { burnRate: 6.1, fuelType: "Avgas" },
+            "Cessna 180": { burnRate: 13.5, fuelType: "Avgas" },
+            "Cessna 182": { burnRate: 13.8, fuelType: "Avgas" },
+            "Cessna 185": { burnRate: 17, fuelType: "Avgas" },
+            "Cessna 210": { burnRate: 13, fuelType: "Avgas" }
+        };
+
+        const airportFuelPrices = {
+            "HAGERSTOWN REGIONAL": { avgas: 6.05, jetA: 6.45 },
+            "LAX": { avgas: 6.30, jetA: 6.70 },
+            "JFK": { avgas: 6.25, jetA: 6.65 },
+            "MIAMI INTERNATIONAL": { avgas: 6.28, jetA: 6.68 },
+            "BOSTON LOGAN": { avgas: 6.35, jetA: 6.75 },
+            "DENVER INTERNATIONAL": { avgas: 6.20, jetA: 6.60 },
+            "ATLANTA HARTSFIELD": { avgas: 6.18, jetA: 6.58 },
+            "CHICAGO O'HARE": { avgas: 6.10, jetA: 6.50 },
+            "PHOENIX SKY HARBOR": { avgas: 6.12, jetA: 6.52 },
+            "SEATTLE-TACOMA": { avgas: 6.22, jetA: 6.62 },
+            "DFW": { avgas: 6.15, jetA: 6.55 }
+        };
+
+        function calculateFuelCost() {
+            const planeName = document.getElementById("plane").value;
+            const hours = parseFloat(document.getElementById("hours").value);
+            const inputAirport = document.getElementById("airport").value.trim().toUpperCase();
+
+            if (!planeName || isNaN(hours) || hours <= 0) {
+                document.getElementById("result").textContent = "Please enter a valid aircraft and number of hours.";
+                return;
+            }
+
+            const { burnRate, fuelType } = planes[planeName];
+            let fuelPrice;
+
+            for (const [key, prices] of Object.entries(airportFuelPrices)) {
+                if (inputAirport === key || key.includes(inputAirport)) {
+                    fuelPrice = (fuelType === "Avgas") ? prices.avgas : prices.jetA;
+                    break;
+                }
+            }
+
+            if (!fuelPrice) {
+                document.getElementById("result").textContent = "Unknown airport name or code. Please enter a valid one.";
+                return;
+            }
+
+            const fuel = hours * burnRate;
+            const cost = fuel * fuelPrice;
+
+            document.getElementById("result").textContent =
+                `You will burn ${fuel.toFixed(2)} gallons of ${fuelType}, costing you $${cost.toFixed(2)}.`;
+        }
+    </script>
+</body>
+</html>
+
